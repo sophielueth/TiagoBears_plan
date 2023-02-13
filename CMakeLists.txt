@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(TiagoBears_plam)
+project(TiagoBears_plan)
 find_package(catkin REQUIRED COMPONENTS
   control_msgs
   geometry_msgs
@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
 
   gazebo_ros
+  TiagoBears_grasp
 )
 catkin_package(
   CATKIN_DEPENDS
@@ -26,6 +27,7 @@ catkin_package(
     tf
     moveit_commander
     actionlib
+    TiagoBears_grasp
 )
 
 catkin_install_python(PROGRAMS 

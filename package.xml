@@ -2,12 +2,13 @@
 <package format="2">
   <name>TiagoBears_plan</name>
   <version>2.3.1</version>
-  <description>TiagoBears_grasp</description>
+  <description>TiagoBears_plan</description>
   <maintainer email="sophie.lueth@stud.tu-darmstadt.de">Sophie</maintainer>
   <author email="sophie.lueth@stud.tu-darmstadt.de">Sophie</author>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
 
+  <depend>TiagoBears_grasp</depend>
   <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
