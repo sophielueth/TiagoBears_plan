@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(TiagoBears_grasp)
+project(TiagoBears_plam)
 find_package(catkin REQUIRED COMPONENTS
   control_msgs
   geometry_msgs
@@ -28,8 +28,7 @@ catkin_package(
     actionlib
 )
 
-catkin_install_python(PROGRAMS scripts/test_cubes.py
-                               scripts/grasp_node.py
+catkin_install_python(PROGRAMS 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
