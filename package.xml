@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>TiagoBears_plan</name>
+  <version>2.3.1</version>
+  <description>TiagoBears_grasp</description>
+  <maintainer email="sophie.lueth@stud.tu-darmstadt.de">Sophie</maintainer>
+  <author email="sophie.lueth@stud.tu-darmstadt.de">Sophie</author>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>control_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>moveit_msgs</depend>
+  <depend>rospy</depend>
+  <depend>tf</depend>
+  <depend>moveit_commander</depend>
+  <depend>actionlib</depend>
+
+  <depend>gazebo_ros</depend>
+ 
+</package>
