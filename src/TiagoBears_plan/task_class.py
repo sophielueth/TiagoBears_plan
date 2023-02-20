@@ -9,7 +9,6 @@ import moveit_msgs.msg
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
-# TODO: make this into a task class
 class Task:
     """
     handles collision avoidance, setup tasks and torso movement
@@ -86,3 +85,4 @@ class Task:
         ps.header.frame_id = self.planning_frame
         ps.pose = p
         self._scene.add_box('table', ps, (0.6, 0.75, 0.5))
+        
