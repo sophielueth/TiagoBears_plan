@@ -14,7 +14,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('grasp')
         
-        subprocess.call('roslaunch TiagoBears_grasp load_config.launch') #ee:=pal-gripper (default), ee:= robotiq-2f-85
+        subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
         task = Task()
 
         grasp_left = Grasp(is_left=True)

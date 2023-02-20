@@ -38,7 +38,7 @@ class Task:
         self._rate = rospy.Rate(10) # 10 Hz
 
         # init to move torso to joint position 0.25
-        self._torso_pub = rospy.Publisher('/torso_controller/command', JointTrajectory)
+        self._torso_pub = rospy.Publisher('/torso_controller/command', JointTrajectory, queue_size=1)
         self._torso_lock = Lock()
         self._torso_state = 0.25
         self._pub_thread = Thread(name='task_publisher', target=self._update_torso)
@@ -47,7 +47,7 @@ class Task:
 
     ## Torso movement
     def move_torso_up(self):
-        self.move_torso_to(0.25)
+        self.move_torso_to(0.30)
 
     def move_torso_down(self):
         self.move_torso_to(0.14)
@@ -55,14 +55,14 @@ class Task:
     def move_torso_to(self, value):
         # value bounded to [0, 0.35] in m
         with self._torso_lock:
-            self.torso_state = value
+            self._torso_state = value
         
     def _update_torso(self):
         while not rospy.is_shutdown():
             with self._torso_lock:
                 goal = [self._torso_state]
             msg = JointTrajectory(joint_names=['torso_lift_joint'], points=[JointTrajectoryPoint(positions=goal, time_from_start=rospy.Duration.from_sec(1))])
-            self.torso_pub.publish(msg)
+            self._torso_pub.publish(msg)
             self._rate.sleep()    
 
     ## Collision
