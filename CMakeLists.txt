@@ -30,7 +30,7 @@ catkin_package(
     TiagoBears_grasp
 )
 
-catkin_install_python(PROGRAMS 
+catkin_install_python(PROGRAMS scripts/test_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

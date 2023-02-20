@@ -5,6 +5,21 @@ from geometry_msgs.msg import Pose
 
 # TODO: add this whole thing :D
 
+"""
+example for using both arms:
+from threading import Thread
+
+thread_left = Thread(name='grasp with left arm', target=do_something)
+(...)
+
+def do_something():
+    (...)
+    grasp_left.pick(cube)
+    (...)
+
+"""
+
+
 class Behaviour:
     pass
 
