@@ -45,6 +45,11 @@ class Task:
         self._pub_thread.start()
         self.move_torso_up()      
 
+    def check_if_cube_in_gripper(self):
+        # TODO: implement
+        # returns: None if no cube in gripper, colormap if cube in gripper
+        pass
+
     ## Torso movement
     def move_torso_up(self):
         self.move_torso_to(0.30)
