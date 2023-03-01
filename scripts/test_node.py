@@ -46,26 +46,27 @@ if __name__ == '__main__':
                 # add_cubes_for_collision_but_not(cube.id, cubes, scene, robot.get_planning_frame())
                 use_left = True if cube.pose.position.y > 0 else False
 
-                grasp_left.pick(cube) if use_left else grasp_right.pick(cube)
+                pick_success = grasp_left.pick(cube) if use_left else grasp_right.pick(cube)
                 
-                place_pose = place_pose_left if use_left else place_pose_right
-                print '=== Trying to place cube {0} ==='.format(min_ind)
+                if pick_success:
+                    place_pose = place_pose_left if use_left else place_pose_right
+                    print '=== Trying to place cube {0} ==='.format(min_ind)
 
-                grasp_left.place(place_pose) if use_left else grasp_right.place(place_pose)
+                    grasp_left.place(place_pose) if use_left else grasp_right.place(place_pose)
 
-                # update pose
-                if use_left:
-                    if place_pose.position.y > 0.06:
-                        place_pose.position.y -= 0.06 # move 6 cm to the right, check for next line
+                    # update pose
+                    if use_left:
+                        if place_pose.position.y > 0.06:
+                            place_pose.position.y -= 0.06 # move 6 cm to the right, check for next line
+                        else:
+                            place_pose.position.x -= 0.06 # start next line
+                            place_pose.position.y = 0.335
                     else:
-                        place_pose.position.x -= 0.06 # start next line
-                        place_pose.position.y = 0.335
-                else:
-                    if place_pose.position.y < -0.06:
-                        place_pose.position.y += 0.06 # move 6 cm to the right, check for next line
-                    else:
-                        place_pose.position.x -= 0.06 # start next line
-                        place_pose.position.y = -0.335
+                        if place_pose.position.y < -0.06:
+                            place_pose.position.y += 0.06 # move 6 cm to the right, check for next line
+                        else:
+                            place_pose.position.x -= 0.06 # start next line
+                            place_pose.position.y = -0.335
 
             except rospy.ROSInterruptException as e:
                     print('an exception has occured:')
