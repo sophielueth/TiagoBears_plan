@@ -43,12 +43,14 @@ if __name__ == '__main__':
             print '=== Trying to pick cube {0} ==='.format(min_ind)
             cube = cubes.pop(min_ind)
             try:
+                task.remove_cube_collisions()
                 # add_cubes_for_collision_but_not(cube.id, cubes, scene, robot.get_planning_frame())
                 use_left = True if cube.pose.position.y > 0 else False
 
                 pick_success = grasp_left.pick(cube) if use_left else grasp_right.pick(cube)
                 
                 if pick_success:
+                    task.add_cubes_for_collision_except(min_ind, cubes)
                     place_pose = place_pose_left if use_left else place_pose_right
                     print '=== Trying to place cube {0} ==='.format(min_ind)
 
