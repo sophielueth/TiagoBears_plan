@@ -85,7 +85,7 @@ class Task:
 
     def add_table_collision(self):
         # add table as collision object
-        p = Pose(Point(x=0.5, y=0, z=0), Quaternion())
+        p = Pose(Point(x=0.5, y=0, z=0.20), Quaternion())
         ps = PoseStamped()
         ps.header.frame_id = self.planning_frame
         ps.pose = p
