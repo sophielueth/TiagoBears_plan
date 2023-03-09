@@ -25,8 +25,8 @@ if __name__ == '__main__':
         for i in range(28):
             cubes.append(Cube(i))
 
-        place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.52), orientation=Quaternion(w=1.0))
-        place_pose_right = Pose(position=Point(x=0.7, y=-0.33, z=0.52), orientation=Quaternion(w=1.0))
+        place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.525), orientation=Quaternion(w=1.0))
+        place_pose_right = Pose(position=Point(x=0.7, y=-0.33, z=0.525), orientation=Quaternion(w=1.0))
         
         while len(cubes) > 23:
             # choose closest cube
@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 # add_cubes_for_collision_but_not(cube.id, cubes, scene, robot.get_planning_frame())
                 use_left = True if cube.pose.position.y > 0 else False
 
-                pick_success = grasp_left.pick(cube) if use_left else grasp_right.pick(cube)
+                pick_success = grasp_left.pick(cube.pose) if use_left else grasp_right.pick(cube.pose)
                 
                 if pick_success:
                     task.add_cubes_for_collision_except(min_ind, cubes)
