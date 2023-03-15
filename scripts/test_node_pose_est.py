@@ -8,6 +8,8 @@ from TiagoBears_grasp.grasp_class import Grasp
 from TiagoBears_grasp.cube_class import Cube
 from TiagoBears_plan.task_class import Task
 
+from TiagoBears_PoseEstimation.srv import PoseEstimation
+
 from geometry_msgs.msg import Pose, Point, Quaternion
 
 if __name__ == '__main__':
@@ -20,37 +22,52 @@ if __name__ == '__main__':
         grasp_left = Grasp(is_left=True)
         grasp_right = Grasp(is_left=False)
 
-        cubes = []
+        # cubes = []
 
-        for i in range(28):
-            cubes.append(Cube(i))
+        # for i in range(28):
+        #     cubes.append(Cube(i))
+
+        cube_poses = []
+        rospy.wait_for_service('PoseEstimation')
+
+        try:
+            poseArray = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
+
+        except rospy.ServiceException as e: 
+            print('Service call failed: %s'%e)
+            sys.exit(1)
+
+        for pose in poseArray:
+            if pose is not None:
+                cube_poses.append(pose.pose.pose)
+
 
         place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.525), orientation=Quaternion(w=1.0))
         place_pose_right = Pose(position=Point(x=0.7, y=-0.33, z=0.525), orientation=Quaternion(w=1.0))
         
-        while len(cubes) > 23:
+        while len(cube_poses) > 23:
             # choose closest cube
             min_dist_sq = 100 #m, should be impossible
             min_ind = -1
-            for index, cube in enumerate(cubes):
-                while cube.pose == None: rospy.sleep(0.1)
+            for index, cube_pose in enumerate(cube_poses):
+                # while cube.pose == None: rospy.sleep(0.1)
                 # dist_sq = cube.pose.position.x**2 + cube.pose.position.y**2 + (cube.pose.position.z-1.0)**2
-                dist_sq = (cube.pose.position.x-0.2)**2 + (abs(cube.pose.position.y) - 0.375)**2
+                dist_sq = (cube_pose.position.x-0.2)**2 + (abs(cube_pose.position.y) - 0.375)**2
                 if dist_sq < min_dist_sq:
                     min_dist_sq = dist_sq
                     min_ind = index
             
             print '=== Trying to pick cube {0} ==='.format(min_ind)
-            cube = cubes.pop(min_ind)
+            cube_pose = cube_poses.pop(min_ind)
             try:
                 task.remove_cube_collisions()
                 # add_cubes_for_collision_but_not(cube.id, cubes, scene, robot.get_planning_frame())
-                use_left = True if cube.pose.position.y > 0 else False
+                use_left = True if cube_pose.position.y > 0 else False
 
-                pick_success = grasp_left.pick(cube.pose) if use_left else grasp_right.pick(cube.pose)
+                pick_success = grasp_left.pick(cube_pose) if use_left else grasp_right.pick(cube_pose)
                 
                 if pick_success:
-                    task.add_cubes_for_collision_except(min_ind, cubes)
+                    task.add_cubes_for_collision_except_poses(min_ind, cube_poses)
                     place_pose = place_pose_left if use_left else place_pose_right
                     print '=== Trying to place cube {0} ==='.format(min_ind)
 

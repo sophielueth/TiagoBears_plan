@@ -79,6 +79,14 @@ class Task:
                 ps.pose = cube.pose
                 self._scene.add_box('cube_{0}'.format(cube.id), ps, (0.045, 0.045, 0.045))
 
+    def add_cubes_for_collision_except_poses(self, id_not_to_add, cube_poses):
+        for index, cube_pose in enumerate(cube_poses):
+            if index is not id_not_to_add:
+                ps = PoseStamped()
+                ps.header.frame_id = self.planning_frame
+                ps.pose = cube_pose
+                self._scene.add_box('cube_{0}'.format(index), ps, (0.045, 0.045, 0.045))
+
     def remove_cube_collisions(self):
         self._scene.remove_world_object()
         self.add_table_collision()
