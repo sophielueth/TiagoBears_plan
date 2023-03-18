@@ -16,6 +16,25 @@ if __name__ == '__main__':
     try:
         rospy.init_node('grasp')
         
+        cube_poses = []
+        rospy.wait_for_service('PoseEstimation')
+        pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
+
+        try:
+            poseArray = pose_est_service("Hi :) This is a test...").poseArray
+
+        except rospy.ServiceException as e: 
+            print('Service call failed: %s'%e)
+            sys.exit(1)
+
+        def pose_in_origin(pose):
+            pose = pose.pose.pose
+            return pose.position.x == 0 and pose.position.y == 0 and pose.position.z == 0
+
+        for pose in poseArray:
+            if pose is not None and pose_in_origin(pose):
+                cube_poses.append(pose.pose.pose)
+
         subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
         task = Task()
 
@@ -27,19 +46,7 @@ if __name__ == '__main__':
         # for i in range(28):
         #     cubes.append(Cube(i))
 
-        cube_poses = []
-        rospy.wait_for_service('PoseEstimation')
 
-        try:
-            poseArray = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
-
-        except rospy.ServiceException as e: 
-            print('Service call failed: %s'%e)
-            sys.exit(1)
-
-        for pose in poseArray:
-            if pose is not None:
-                cube_poses.append(pose.pose.pose)
 
 
         place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.525), orientation=Quaternion(w=1.0))
