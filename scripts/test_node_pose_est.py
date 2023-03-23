@@ -54,7 +54,9 @@ if __name__ == '__main__':
                                                z=place_pos_right_start[2]), 
                                                orientation=Quaternion(w=1.0))
         
-        while len(cube_poses) > 23 and not rospy.is_shutdown():
+        len_orig = len(cube_poses)
+
+        while len(cube_poses) > len_orig - 5 and not rospy.is_shutdown():
             # choose closest cube
             min_dist_sq = 100 #m, should be impossible
             min_ind = -1
