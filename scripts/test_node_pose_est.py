@@ -43,15 +43,15 @@ if __name__ == '__main__':
         grasp_left = Grasp(is_left=True)
         grasp_right = Grasp(is_left=False)
 
-        place_pose_left_start = rospy.get_param(ns + '/place_pos_left_start')
-        place_pose_right_start = rospy.get_param(ns + '/place_pos_right_start')
-        place_pose_left = Pose(position=Point(x=place_pose_left_start[0], 
-                                              y=place_pose_left_start[1], 
-                                              z=place_pose_left_start[2]), 
+        place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
+        place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
+        place_pose_left = Pose(position=Point(x=place_pos_left_start[0], 
+                                              y=place_pos_left_start[1], 
+                                              z=place_pos_left_start[2]), 
                                               orientation=Quaternion(w=1.0))
-        place_pose_right = Pose(position=Point(x=place_pose_right_start[0], 
-                                               y=place_pose_right_start[1], 
-                                               z=place_pose_right_start[2]), 
+        place_pose_right = Pose(position=Point(x=place_pos_right_start[0], 
+                                               y=place_pos_right_start[1], 
+                                               z=place_pos_right_start[2]), 
                                                orientation=Quaternion(w=1.0))
         
         while len(cube_poses) > 23 and not rospy.is_shutdown():

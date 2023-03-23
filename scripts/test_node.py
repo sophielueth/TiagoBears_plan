@@ -12,8 +12,9 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 
 if __name__ == '__main__':
     try:
+        ns = '/TiagoBears'
         rospy.init_node('grasp')
-        
+
         subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
         subprocess.call("roslaunch TiagoBears_plan load_config.launch sim:=True", shell=True) #sim:=False (default), sim:=True
         task = Task()
@@ -26,10 +27,16 @@ if __name__ == '__main__':
         for i in range(28):
             cubes.append(Cube(i))
 
-
-        place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.525), orientation=Quaternion(w=1.0))
-        place_pose_right = Pose(position=Point(x=0.7, y=-0.33, z=0.525), orientation=Quaternion(w=1.0))
-        
+        place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
+        place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
+        place_pose_left = Pose(position=Point(x=place_pos_left_start[0], 
+                                              y=place_pos_left_start[1], 
+                                              z=place_pos_left_start[2]), 
+                                              orientation=Quaternion(w=1.0))
+        place_pose_right = Pose(position=Point(x=place_pos_right_start[0], 
+                                               y=place_pos_right_start[1], 
+                                               z=place_pos_right_start[2]), 
+                                               orientation=Quaternion(w=1.0))
         while len(cubes) > 23:
             # choose closest cube
             min_dist_sq = 100 #m, should be impossible
