@@ -5,7 +5,6 @@ import rospy
 import subprocess
 
 from TiagoBears_grasp.grasp_class import Grasp
-from TiagoBears_grasp.cube_class import Cube
 from TiagoBears_plan.task_class import Task
 
 from TiagoBears_PoseEstimation.srv import PoseEstimation
@@ -14,6 +13,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 
 if __name__ == '__main__':
     try:
+        ns = '/TiagoBears'
         rospy.init_node('grasp')
         
         cube_poses = []
@@ -36,23 +36,25 @@ if __name__ == '__main__':
                 cube_poses.append(pose.pose.pose)
 
         subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
+        subprocess.call("roslaunch TiagoBears_plan load_config.launch", shell=True) #sim:=False (default), sim:=True
+        
         task = Task()
 
         grasp_left = Grasp(is_left=True)
         grasp_right = Grasp(is_left=False)
 
-        # cubes = []
-
-        # for i in range(28):
-        #     cubes.append(Cube(i))
-
-
-
-
-        place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.525), orientation=Quaternion(w=1.0))
-        place_pose_right = Pose(position=Point(x=0.7, y=-0.33, z=0.525), orientation=Quaternion(w=1.0))
+        place_pose_left_start = rospy.get_param(ns + '/place_pos_left_start')
+        place_pose_right_start = rospy.get_param(ns + '/place_pos_right_start')
+        place_pose_left = Pose(position=Point(x=place_pose_left_start[0], 
+                                              y=place_pose_left_start[1], 
+                                              z=place_pose_left_start[2]), 
+                                              orientation=Quaternion(w=1.0))
+        place_pose_right = Pose(position=Point(x=place_pose_right_start[0], 
+                                               y=place_pose_right_start[1], 
+                                               z=place_pose_right_start[2]), 
+                                               orientation=Quaternion(w=1.0))
         
-        while len(cube_poses) > 23:
+        while len(cube_poses) > 23 and not rospy.is_shutdown():
             # choose closest cube
             min_dist_sq = 100 #m, should be impossible
             min_ind = -1

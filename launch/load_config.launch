@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+    <arg name="sim" default="False"/>
+    <arg name="ns" default="TiagoBears"/>
+
+    <group if="$(arg sim)">
+        <rosparam command="load" file="$(find TiagoBears_plan)/config/task_params_sim.yaml" ns="$(arg ns)"/>
+    </group>
+
+    <group unless="$(arg sim)">
+        <rosparam command="load" file="$(find TiagoBears_plan)/config/task_params.yaml" ns="$(arg ns)"/>
+    </group>
+
+    <!-- <node name="TiagoBears_plan" pkg="TiagoBears_plan" type="TBA"/> -->
+
+</launch>

@@ -1,0 +1,5 @@
+min_diff_to_table: 0.02
+table_params: [0.50, 0.66, 0.36] # x-width, y-width, z-width
+
+place_pos_left_start: [0.6, 0.27, 0.385]
+place_pose_right_start: [0.6, -0.27, 0.385]

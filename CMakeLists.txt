@@ -33,6 +33,7 @@ catkin_package(
 )
 
 catkin_install_python(PROGRAMS scripts/test_node.py
+			       scripts/test_node_pose_est.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

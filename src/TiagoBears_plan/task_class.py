@@ -17,7 +17,9 @@ class Task:
     https://answers.ros.org/question/9665/test-for-when-a-rospy-publisher-become-available/
     """
 
-    def __init__(self):
+    def __init__(self, ns='/TiagoBears'):
+        self.ns = ns
+
         # initialize move it for both arms
         moveit_commander.roscpp_initialize(sys.argv)
 
@@ -27,6 +29,10 @@ class Task:
 
         # Instantiate a `PlanningSceneInterface`_ object; it's a remote interface for getting, setting, and updating the robot's internal understanding of the surrounding world:
         self._scene = moveit_commander.PlanningSceneInterface()
+
+        # read out table dimensions from param server
+        self._table_dim = rospy.get_param(self.ns + '/table_params')
+        self._table_diff = rospy.get_param(self.ns + '/min_diff_to_table') # min dist to table for all grasps
 
         # add table as collision object
         self.add_table_collision()
@@ -68,7 +74,9 @@ class Task:
                 goal = [self._torso_state]
             msg = JointTrajectory(joint_names=['torso_lift_joint'], points=[JointTrajectoryPoint(positions=goal, time_from_start=rospy.Duration.from_sec(1))])
             self._torso_pub.publish(msg)
-            self._rate.sleep()    
+            self._rate.sleep()   
+
+        sys.exit() 
 
     ## Collision
     def add_cubes_for_collision_except(self, id_not_to_add, cubes):

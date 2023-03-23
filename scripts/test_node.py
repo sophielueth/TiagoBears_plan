@@ -15,6 +15,7 @@ if __name__ == '__main__':
         rospy.init_node('grasp')
         
         subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
+        subprocess.call("roslaunch TiagoBears_plan load_config.launch sim:=True", shell=True) #sim:=False (default), sim:=True
         task = Task()
 
         grasp_left = Grasp(is_left=True)
@@ -24,6 +25,7 @@ if __name__ == '__main__':
 
         for i in range(28):
             cubes.append(Cube(i))
+
 
         place_pose_left = Pose(position=Point(x=0.7, y=0.33, z=0.525), orientation=Quaternion(w=1.0))
         place_pose_right = Pose(position=Point(x=0.7, y=-0.33, z=0.525), orientation=Quaternion(w=1.0))
