@@ -16,6 +16,13 @@ if __name__ == '__main__':
         ns = '/TiagoBears'
         rospy.init_node('grasp')
         
+        subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
+        subprocess.call("roslaunch TiagoBears_plan load_config.launch", shell=True) #sim:=False (default), sim:=True
+
+        task = Task()
+
+        task.move_torso_to(0.06)
+
         cube_poses = []
         rospy.wait_for_service('PoseEstimation')
         pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
@@ -32,13 +39,10 @@ if __name__ == '__main__':
             return pose.position.x == 0 and pose.position.y == 0 and pose.position.z == 0
 
         for pose in poseArray:
-            if pose is not None and pose_in_origin(pose):
+            if pose is not None and not pose_in_origin(pose):
                 cube_poses.append(pose.pose.pose)
 
-        subprocess.call("roslaunch TiagoBears_grasp load_config.launch", shell=True) #ee:=pal-gripper (default), ee:= robotiq-2f-85
-        subprocess.call("roslaunch TiagoBears_plan load_config.launch", shell=True) #sim:=False (default), sim:=True
-        
-        task = Task()
+        task.move_torso_to(0.30)
 
         grasp_left = Grasp(is_left=True)
         grasp_right = Grasp(is_left=False)
