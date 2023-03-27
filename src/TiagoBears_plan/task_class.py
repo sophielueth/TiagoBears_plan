@@ -9,6 +9,8 @@ import moveit_msgs.msg
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
+from TiagoBears_PoseEstimation.srv import PoseEstimation
+
 class Task:
     """
     handles collision avoidance, setup tasks and torso movement
@@ -51,11 +53,6 @@ class Task:
         self._pub_thread.start()
         self.move_torso_up()      
 
-    def check_if_cube_in_gripper(self):
-        # TODO: implement
-        # returns: None if no cube in gripper, colormap if cube in gripper
-        pass
-
     ## Torso movement
     def move_torso_up(self):
         self.move_torso_to(0.30)
@@ -77,6 +74,41 @@ class Task:
             self._rate.sleep()   
 
         sys.exit() 
+
+    ## Cube estimation
+    def get_cube_poses(self):
+        # get the pose estimation from the pose estimation node, cube_poses sorted by increasing x
+        self.move_torso_to(0.06)
+
+        cube_poses = []
+        pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
+
+        poseArray = None
+        while poseArray is None:
+            try:
+                rospy.wait_for_service('PoseEstimation')
+                poseArray = pose_est_service("Querying PoseEstimation service").poseArray
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(1)
+
+        self.move_torso_to(0.30)
+
+        def pose_in_origin(pose):
+            pose = pose.pose.pose
+            return pose.position.x == 0 and pose.position.y == 0 and pose.position.z == 0
+
+        for pose in poseArray:
+            # check validity of pose
+            if pose is not None and not pose_in_origin(pose): 
+                # sort cube_poses in increasing order of x coordinate of pos
+                for index, cube_pose in enumerate(cube_poses):
+                    if cube_pose.position.x > pose.pose.pose.position.x:
+                        cube_poses.insert(index, pose.pose.pose)
+                        break
+
+        return cube_poses
 
     ## Collision
     def add_cubes_for_collision_except(self, id_not_to_add, cubes):

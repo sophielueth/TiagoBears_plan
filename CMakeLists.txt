@@ -34,6 +34,7 @@ catkin_package(
 
 catkin_install_python(PROGRAMS scripts/test_node.py
 			       scripts/test_node_pose_est.py
+             scripts/TiagoBears_stack.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
