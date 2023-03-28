@@ -82,7 +82,7 @@ class Task:
         while success is None:
             try:
                 rospy.wait_for_service('/TiagoBears/init_empty_check')
-                success = init_img_req("Querying init_empty_check service").res
+                success = init_img_req(True).res # bool should be irrelevant
 
             except rospy.ServiceException as e: 
                 print('Service call failed: %s'%e)
@@ -147,7 +147,7 @@ class Task:
     def add_cube_for_collision_at(self, cube_pose):
         if cube_pose is None:
             return
-            
+
         ps = PoseStamped()
         ps.header.frame_id = self.planning_frame
         ps.pose = cube_pose
