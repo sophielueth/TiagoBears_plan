@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
   TiagoBears_grasp
   TiagoBears_PoseEstimation
+  TiagoBears_ColorDetection
 )
 catkin_package(
   CATKIN_DEPENDS
@@ -30,6 +31,7 @@ catkin_package(
     actionlib
     TiagoBears_grasp
     TiagoBears_PoseEstimation
+    TiagoBears_ColorDetection
 )
 
 catkin_install_python(PROGRAMS scripts/test_node.py

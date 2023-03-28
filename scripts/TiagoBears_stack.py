@@ -26,8 +26,10 @@ if __name__ == '__main__':
         grasp_left.start()
         grasp_right.start()
 
+        # get first cube pose estimation and take image to compare for later checks if cube is in gripper/picking has been successful
         cube_poses = task.get_cube_poses()
         next_cubes = behavior.get_next_cube_poses(cube_poses)
+        task.init_image_grippers()
 
         go_on = True
         while go_on and not rospy.is_shutdown():            

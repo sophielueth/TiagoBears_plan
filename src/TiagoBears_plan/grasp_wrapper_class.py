@@ -4,6 +4,7 @@ from threading import Thread, Lock
 import rospy
 
 from TiagoBears_grasp.srv import PickPlace
+from TiagoBears_ColorDetection.srv import InitEmpty
 
 
 class GraspState(Enum):
@@ -101,7 +102,7 @@ class GraspWrapper:
 				print '=== Checking whether recent pick with {0} hand has been successful and the cube is in the gripper'.format('left' if self.is_left else 'right')
 
 				# create request to check whether the gripper is empty
-				check_pick_req = rospy.ServiceProxy('/TiagoBears/is_empty_left' if self.is_left else '/TiagoBears/is_empty_right', CheckPick)
+				check_pick_req = rospy.ServiceProxy('/TiagoBears/is_empty_left' if self.is_left else '/TiagoBears/is_empty_right', InitEmpty)
 				
 				# query service
 				success = None
@@ -151,5 +152,6 @@ class GraspWrapper:
 				print 'GraspWrapper: invalid state {0}'.format(state)
 			
 			rospy.sleep(0.8)
+
 			with self.lock:
 				terminate = self.terminate

@@ -10,6 +10,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
 from TiagoBears_PoseEstimation.srv import PoseEstimation
+from TiagoBears_ColorDetection.srv import InitEmpty
 
 class Task:
     """
@@ -71,6 +72,19 @@ class Task:
             self._rate.sleep()   
 
         sys.exit() 
+
+    def init_image_grippers(self):
+        init_img_req = rospy.ServiceProxy('/TiagoBears/init_empty_check', InitEmpty)
+        
+        success = None
+        while success is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/init_empty_check')
+                success = init_img_req("Querying init_empty_check service").res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(1)
 
     ## Cube estimation
     def get_cube_poses(self):
