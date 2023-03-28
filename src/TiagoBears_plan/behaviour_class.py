@@ -7,7 +7,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 
 # from TiagoBears_grasp.cube_class import Cube
 
-class Behaviour:
+class Behaviour(object):
     def __init__(self, ns):
         self.ns = ns
 
@@ -45,7 +45,7 @@ class Behaviour:
 
 class Behaviour_stack(Behaviour):
     def __init__(self, ns):
-        super().__init__(ns)
+        super(Behaviour_stack, self).__init__(ns)
 
     def get_next_cube_poses(self, cube_poses):
         # return pose with the smallest x value that is not already placed, if none is found return None

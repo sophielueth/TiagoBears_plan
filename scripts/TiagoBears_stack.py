@@ -19,7 +19,7 @@ if __name__ == '__main__':
         rospy.init_node('TiagoBears_stack')
 
         task = Task(ns)
-        behavior = Behaviour_stack(ns, task.move_torso_to)
+        behavior = Behaviour_stack(ns)
 
         grasp_left = GraspWrapper('grasp_wrapper_left', is_left=True)
         grasp_right = GraspWrapper('grasp_wrapper_right', is_left=False)
@@ -30,20 +30,14 @@ if __name__ == '__main__':
         next_cubes = behavior.get_next_cube_poses(cube_poses)
 
         go_on = True
-        while go_on and not rospy.is_shutdown():
-            print '=== Trying to pick cube at ({0}, {1}, {2}) ==='.format(next_cube.position.x, next_cube.position.y, next_cube.position.z)
-            
+        while go_on and not rospy.is_shutdown():            
             # TODO: handle collision checking, add freeing space
             task.remove_cube_collisions()
 
-            use_left = next_cube.position.y > 0
-
-            if use_left: # cube should be grasped by left arm
-                if grasp_left.get_next_cube_pose() is None:
-                    grasp_left.set_next_cube_pose(next_cubes[0])
-            else: # cube should be grasped by right arm
-                if grasp_right.get_next_cube_pose() is None:
-                    grasp_right.set_next_cube_pose(next_cubes[1])
+            if grasp_left.get_next_cube_pose() is None:
+                grasp_left.set_next_cube_pose(next_cubes[0])
+            if grasp_right.get_next_cube_pose() is None:
+                grasp_right.set_next_cube_pose(next_cubes[1])
                 
             if grasp_left.get_next_place_pose() is None:
                 grasp_left.set_next_place_pose(behavior.get_next_place_pose_left())
