@@ -14,9 +14,6 @@ from TiagoBears_PoseEstimation.srv import PoseEstimation
 class Task:
     """
     handles collision avoidance, setup tasks and torso movement
-
-    About the change of structure in the torso value publishing: 
-    https://answers.ros.org/question/9665/test-for-when-a-rospy-publisher-become-available/
     """
 
     def __init__(self, ns='/TiagoBears'):
