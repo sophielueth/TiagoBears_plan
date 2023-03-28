@@ -1,0 +1,5 @@
+cube_length: 0.045 # in m
+stack_height: 3
+
+place_pos_left_start: [0.8, 0.27, 0.515]
+place_pos_right_start: [0.8, -0.27, 0.515]

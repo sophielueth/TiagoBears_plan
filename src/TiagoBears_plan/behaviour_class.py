@@ -10,20 +10,25 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 class Behaviour(object):
     def __init__(self, ns):
         self.ns = ns
+        self._cube_length = rospy.get_param(ns + '/cube_length')
+        self._stack_height_max = rospy.get_param(ns + '/stack_height')
+
+        self._current_stack_height_left = 0
+        self._current_stack_height_right = 0
 
         place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
         place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
 
         # TODO: change to be able to get this from pose estimation also
-        self.place_pose_left = Pose(position=Point(x=place_pos_left_start[0], 
+        self.place_pos_left_start = Point(x=place_pos_left_start[0], 
                                               y=place_pos_left_start[1], 
-                                              z=place_pos_left_start[2]), 
-                                              orientation=Quaternion(w=1.0))
-        self.place_pose_right = Pose(position=Point(x=place_pos_right_start[0], 
+                                              z=place_pos_left_start[2])
+        self.place_pos_right_start = Point(x=place_pos_right_start[0], 
                                                y=place_pos_right_start[1], 
-                                               z=place_pos_right_start[2]), 
-                                               orientation=Quaternion(w=1.0))
-        
+                                               z=place_pos_right_start[2])
+        self.place_pose_left = Pose(position=self.place_pos_left_start, orientation=Quaternion(w=1.0))
+        self.place_pose_right = Pose(position=self.place_pos_right_start, orientation=Quaternion(w=1.0))
+
         # x values, so that x>threshold means the cube detected there is already placed (assumedly)
         self._place_threshold_left = self.place_pose_left.position.x - 0.05
         self._place_threshold_right = self.place_pose_right.position.x - 0.05
@@ -87,18 +92,34 @@ class Behaviour_stack(Behaviour):
         return pose_to_return
     
     def update_place_pose_left(self):
-        if self.place_pose_left.position.y > 0.09: # check whether there're still space in this row (parallel to y axis)
+        # stack cubes with stack_height number of cubes
+        if self._current_stack_height_left < self._stack_height_max: # add cube on top of current stack
+            self.place_pose_left.position.z += self._cube_length
+            self._current_stack_height_left += 1
+        elif self.place_pose_left.position.y > 0.09: # start new stack in same row
             self.place_pose_left.position.y -= 0.06
+            self.place_pose_left.position.z = self.place_pos_left_start.z
+            self._current_stack_height_left = 1
         else:
             self.place_pose_left.position.x -= 0.06 # start a new row
-            self.place_pose_left.position.y = 0.27
+            self.place_pose_left.position.y = self.place_pos_left_start.y
+            self.place_pose_left.position.z = self.place_pos_left_start.z
+            self._current_stack_height_left = 1
 
     def update_place_pose_right(self):
-        if self.place_pose_right.position.y < 0.09: # check whether there're still space in this row (parallel to y axis)
+        # stack cubes with stack_height number of cubes
+        if self._current_stack_height_right < self._stack_height_max: # add cube on top of current stack
+            self.place_pose_right.position.z += self._cube_length
+            self._current_stack_height_right += 1
+        elif self.place_pose_right.position.y < 0.09: # start new stack in same row
             self.place_pose_right.position.y += 0.06
+            self.place_pose_right.position.z = self.place_pos_right_start.z
+            self._current_stack_height_right = 1
         else:
             self.place_pose_right.position.x -= 0.06 # start a new row
-            self.place_pose_right.position.y = -0.27
+            self.place_pose_right.position.y = self.place_pos_right_start.y
+            self.place_pose_right.position.z = self.place_pos_right_start.z
+            self._current_stack_height_right = 1
 
     def free_space_needed(self):
         pass # TODO: implement

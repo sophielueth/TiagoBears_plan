@@ -8,10 +8,12 @@
 
     <group if="$(arg sim)">
         <rosparam command="load" file="$(find TiagoBears_plan)/config/task_params_sim.yaml" ns="$(arg ns)"/>
+        <rosparam command="load" file="$(find TiagoBears_plan)/config/behaviour_params_sim.yaml" ns="$(arg ns)"/>
     </group>
 
     <group unless="$(arg sim)">
-        <rosparam command="load" file="$(find TiagoBears_plan)/config/task_params.yaml" ns="$(arg ns)"/>
+        <rosparam command="load" file="$(find TiagoBears_plan)/config/task_params_real.yaml" ns="$(arg ns)"/>
+        <rosparam command="load" file="$(find TiagoBears_plan)/config/behaviour_params_real.yaml" ns="$(arg ns)"/>
     </group>
 
     <rosparam command="load" file="$(find TiagoBears_grasp)/config/grasp_params.yaml" ns="$(arg ns)"/>
