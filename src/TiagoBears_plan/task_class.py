@@ -49,7 +49,9 @@ class Task:
         self._torso_state = 0.25
         self._pub_thread = Thread(name='task_publisher', target=self._update_torso)
         self._pub_thread.start()
-        self.move_torso_up()      
+        self.move_torso_up()    
+
+        self._cube_counter = 0  
 
     ## Torso movement
     def move_torso_up(self):
@@ -142,10 +144,21 @@ class Task:
         self._scene.remove_world_object()
         self.add_table_collision()
 
+    def add_cube_for_collision_at(self, cube_pose):
+        if cube_pose is None:
+            return
+            
+        ps = PoseStamped()
+        ps.header.frame_id = self.planning_frame
+        ps.pose = cube_pose
+        self._scene.add_box('cube_{0}'.format(self._cube_counter), ps, (0.045, 0.045, 0.045))
+
+        self._cube_counter += 1
+
     def add_table_collision(self):
         # add table as collision object
-
         p = Pose(Point(x=0.6, y=0, z=self._table_dim[2]/2), Quaternion())
+        
         ps = PoseStamped()
         ps.header.frame_id = self.planning_frame
         ps.pose = p

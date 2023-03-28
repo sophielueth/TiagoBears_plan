@@ -22,6 +22,7 @@ class GraspWrapper:
 		self.lock = Lock()
 		self.thread = Thread(name=name, target=self.run)
 		self.terminate = False
+		self.save_state = None
 
 	def set_next_place_pose(self, pose):
 		with self.lock:
@@ -51,7 +52,19 @@ class GraspWrapper:
 		self.thread.start()
 
 	def join(self):
-		self.thread.join()
+		"""
+		wait for the thread to stop picking or placing, then putting it in PAUSED state and returning 
+		"""
+		state = self.get_state()
+		while state in [GraspState.IS_PICKING, GraspState.IS_PLACING]:
+			rospy.sleep(0.8)
+			state = self.get_state()
+		self.save_state = state
+		self.set_state(GraspState.PAUSED)
+
+	def continue_(self):
+		if self.save_state is not None:
+			self.set_state(self.save_state)
 
 	def stop(self):
 		with self.lock:
@@ -65,7 +78,7 @@ class GraspWrapper:
 			state = self.get_state()
 			if state == GraspState.PAUSED:
 				# do nothing
-				rospy.sleep(1)
+				rospy.sleep(0.7)
 
 			elif state == GraspState.FREE: # can start new pick attempt
 				do_it = False
@@ -151,7 +164,7 @@ class GraspWrapper:
 				# is supposed to never happen
 				print 'GraspWrapper: invalid state {0}'.format(state)
 			
-			rospy.sleep(0.8)
+			rospy.sleep(1)
 
 			with self.lock:
 				terminate = self.terminate

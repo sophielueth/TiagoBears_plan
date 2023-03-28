@@ -8,6 +8,9 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 # from TiagoBears_grasp.cube_class import Cube
 
 class Behaviour(object):
+    """
+    handles which of the detected cubes to pick next and where to place them
+    """
     def __init__(self, ns):
         self.ns = ns
         self._cube_length = rospy.get_param(ns + '/cube_length')
@@ -57,7 +60,6 @@ class Behaviour_stack(Behaviour):
 
         next_cube_left = None
         next_cube_right = None
-
         # knowing cube_poses are already sorted by increasing x value
         index = 0
         while (next_cube_left is None or next_cube_right is None) and index < len(cube_poses):
@@ -65,9 +67,9 @@ class Behaviour_stack(Behaviour):
 
             use_left = pose.position.y > 0
 
-            if use_left and next_cube_left is None and pose.position.x < self._place_threshold_left:
+            if use_left and next_cube_left is None and pose.position.z < 0.7 and pose.position.x < self._place_threshold_left:
                 next_cube_left = pose
-            elif not use_left and next_cube_right is None and pose.position.x < self._place_threshold_right:
+            elif not use_left and next_cube_right is None and pose.position.z < 0.7 and pose.position.x < self._place_threshold_right:
                 next_cube_right = pose
 
             index += 1
@@ -96,7 +98,7 @@ class Behaviour_stack(Behaviour):
         if self._current_stack_height_left < self._stack_height_max: # add cube on top of current stack
             self.place_pose_left.position.z += self._cube_length
             self._current_stack_height_left += 1
-        elif self.place_pose_left.position.y > 0.09: # start new stack in same row
+        elif self.place_pose_left.position.y >= 0.09: # start new stack in same row
             self.place_pose_left.position.y -= 0.06
             self.place_pose_left.position.z = self.place_pos_left_start.z
             self._current_stack_height_left = 1
@@ -105,13 +107,14 @@ class Behaviour_stack(Behaviour):
             self.place_pose_left.position.y = self.place_pos_left_start.y
             self.place_pose_left.position.z = self.place_pos_left_start.z
             self._current_stack_height_left = 1
+            self._place_threshold_left -= 0.06
 
     def update_place_pose_right(self):
         # stack cubes with stack_height number of cubes
         if self._current_stack_height_right < self._stack_height_max: # add cube on top of current stack
             self.place_pose_right.position.z += self._cube_length
             self._current_stack_height_right += 1
-        elif self.place_pose_right.position.y < 0.09: # start new stack in same row
+        elif self.place_pose_right.position.y <= 0.09: # start new stack in same row
             self.place_pose_right.position.y += 0.06
             self.place_pose_right.position.z = self.place_pos_right_start.z
             self._current_stack_height_right = 1
@@ -120,9 +123,39 @@ class Behaviour_stack(Behaviour):
             self.place_pose_right.position.y = self.place_pos_right_start.y
             self.place_pose_right.position.z = self.place_pos_right_start.z
             self._current_stack_height_right = 1
+            self._place_threshold_right -= 0.06
 
     def free_space_needed(self):
         pass # TODO: implement
 
     def free_space(self):
         pass # TODO: implement
+
+    def get_placed_cubes_poses(self):
+        raise NotImplementedError
+        # will probably not be needed... - stays here for now
+
+    def _get_placed_cubes_poses_xy(self):
+        # get possible values for the left hand
+        current_pos = self.place_pose_left.position
+        cube_poses_left_xy = []
+
+        while current_pos.x < self.place_pos_left_start.x: # check for all rows
+            while current_pos.y < self.place_pos_left_start.y: # check for all pos in the row
+                cube_poses_left_xy.append(copy.deepcopy(current_pos))
+                current_pos.y += 0.06
+            current_pos.x += 0.06
+            current_pos.y = 0.03
+                
+        # get possible values for the right hand
+        current_pos = self.place_pose_right.position
+        cube_poses_right_xy = []
+
+        while current_pos.x < self.place_pos_right_start.x: # check for all rows
+            while current_pos.y > self.place_pos_right_start.y: # check for all pos in the row 
+                cube_poses_right_xy.append(copy.deepcopy(current_pos))
+                current_pos.y -= 0.06
+            current_pos.x += 0.06
+            current_pos.y = -0.03
+
+        return cube_poses_left_xy, cube_poses_right_xy
