@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin python
 
 import sys
 import rospy
@@ -22,7 +22,7 @@ if __name__ == '__main__':
         task = Task()
 
         task.move_torso_to(0.06)
-
+        rospy.sleep(0.5)
         cube_poses = []
         rospy.wait_for_service('PoseEstimation')
         pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)

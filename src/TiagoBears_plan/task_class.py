@@ -79,7 +79,7 @@ class Task:
     def get_cube_poses(self):
         # get the pose estimation from the pose estimation node, cube_poses sorted by increasing x
         self.move_torso_to(0.06)
-
+        rospy.sleep(0.5)
         cube_poses = []
         pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
 
@@ -133,12 +133,13 @@ class Task:
 
     def add_table_collision(self):
         # add table as collision object
-        p = Pose(Point(x=0.5, y=0, z=0.21), Quaternion())
+
+        p = Pose(Point(x=0.6, y=0, z=self._table_dim[2]/2), Quaternion())
         ps = PoseStamped()
         ps.header.frame_id = self.planning_frame
         ps.pose = p
         
-        self._scene.add_box('table', ps, (0.62, 0.78, 0.50))
+        self._scene.add_box('table', ps, self._table_dim)
 
     def add_table_collision_at(self, z_val):
         # add table as collision object

@@ -13,12 +13,13 @@
     <group unless="$(arg sim)">
         <rosparam command="load" file="$(find TiagoBears_plan)/config/task_params.yaml" ns="$(arg ns)"/>
     </group>
+
     <rosparam command="load" file="$(find TiagoBears_grasp)/config/grasp_params.yaml" ns="$(arg ns)"/>
     <rosparam command="load" file="$(find TiagoBears_grasp)/config/gripper_params_$(arg ee).yaml" ns="$(arg ns)"/>
 
     <node name="TiagoBears_pose_estimation" pkg="TiagoBears_PoseEstimation" type="pose_node"/>
-    <node name="TiagoBears_color_detection" pkg="TiagoBears_ColorDetection" type="color_detection_node"/>
-    <node name="TiagoBears_grasp" pkg="TiagoBears_grasp" type="grasp_node"/>
-    <node name="TiagoBears_plan" pkg="TiagoBears_plan" type="TiagoBears_stack"/>
+    <node name="TiagoBears_color_detection" pkg="TiagoBears_ColorDetection" type="color_detection_node.py"/>
+    <node name="TiagoBears_grasping" pkg="TiagoBears_grasp" type="grasp_node.py"/>
+    <node name="TiagoBears_planning" pkg="TiagoBears_plan" type="TiagoBears_stack.py"/>
 
 </launch>
