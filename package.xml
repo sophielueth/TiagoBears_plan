@@ -10,6 +10,7 @@
 
   <depend>TiagoBears_grasp</depend>
   <depend>TiagoBears_PoseEstimation</depend>
+  <depend>TiagoBears_ColorDetection</depend>
   <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
