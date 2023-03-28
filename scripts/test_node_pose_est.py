@@ -21,6 +21,20 @@ if __name__ == '__main__':
 
         task = Task()
 
+        grasp_left = Grasp(is_left=True)
+        grasp_right = Grasp(is_left=False)
+
+        place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
+        place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
+        place_pose_left = Pose(position=Point(x=place_pos_left_start[0], 
+                                              y=place_pos_left_start[1], 
+                                              z=place_pos_left_start[2]), 
+                                              orientation=Quaternion(w=1.0))
+        place_pose_right = Pose(position=Point(x=place_pos_right_start[0], 
+                                               y=place_pos_right_start[1], 
+                                               z=place_pos_right_start[2]), 
+                                               orientation=Quaternion(w=1.0))
+
         task.move_torso_to(0.06)
         rospy.sleep(0.5)
         cube_poses = []
@@ -44,20 +58,6 @@ if __name__ == '__main__':
 
         task.move_torso_to(0.30)
 
-        grasp_left = Grasp(is_left=True)
-        grasp_right = Grasp(is_left=False)
-
-        place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
-        place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
-        place_pose_left = Pose(position=Point(x=place_pos_left_start[0], 
-                                              y=place_pos_left_start[1], 
-                                              z=place_pos_left_start[2]), 
-                                              orientation=Quaternion(w=1.0))
-        place_pose_right = Pose(position=Point(x=place_pos_right_start[0], 
-                                               y=place_pos_right_start[1], 
-                                               z=place_pos_right_start[2]), 
-                                               orientation=Quaternion(w=1.0))
-        
         len_orig = len(cube_poses)
 
         while len(cube_poses) > len_orig - 5 and not rospy.is_shutdown():
