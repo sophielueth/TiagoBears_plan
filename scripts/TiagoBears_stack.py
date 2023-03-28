@@ -62,7 +62,7 @@ if __name__ == '__main__':
                 grasp_right.set_next_place_pose(last_place_pose_right)
                 renew_pose_estimation = True # cube could have fallen down, renew pose estimation to cover this case
 
-            if renew_pose_estimation_left and :
+            if renew_pose_estimation:
                 grasp_left.join()
                 grasp_right.join()
 
