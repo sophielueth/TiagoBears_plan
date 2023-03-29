@@ -11,6 +11,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
 from TiagoBears_PoseEstimation.srv import PoseEstimation
 from TiagoBears_ColorDetection.srv import InitEmpty
+from TiagoBears_grasp.srv import Trigger
 
 class Task:
     """
@@ -90,28 +91,24 @@ class Task:
 
     ## Cube estimation
     def get_cube_poses(self):
-        # get the pose estimation from the pose estimation node, cube_poses sorted by increasing x
+        """
+         get the pose estimation from the pose estimation node, cube_poses sorted by increasing x
+        """
+
+        self._move_arms_to_start() # move arms out of field of view, avoid collision with table
         self.move_torso_to(0.06)
-        rospy.sleep(0.5)
-        cube_poses = []
-        pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
+        rospy.sleep(0.5) # wait for torso to arrive
 
-        poseArray = None
-        while poseArray is None:
-            try:
-                rospy.wait_for_service('/TiagoBears/PoseEstimation')
-                poseArray = pose_est_service("Querying PoseEstimation service").poseArray
-
-            except rospy.ServiceException as e: 
-                print('Service call failed: %s'%e)
-                rospy.sleep(1)
+        poseArray = self._call_pose_estimation()
 
         self.move_torso_to(0.30)
+        self._move_arms_to_watch() # move arms back to watch position
 
         def pose_in_origin(pose):
             pose = pose.pose.pose
             return pose.position.x == 0 and pose.position.y == 0 and pose.position.z == 0
 
+        cube_poses = []
         for pose in poseArray:
             # check validity of pose
             if pose is not None and not pose_in_origin(pose): 
@@ -179,3 +176,63 @@ class Task:
         ps.header.frame_id = self.planning_frame
         ps.pose = p
         self._scene.add_box('table', ps, (0.62, 0.78, 0.50))
+
+    def _call_pose_estimation(self):
+        pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
+        poseArray = None
+        while poseArray is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/PoseEstimation')
+                poseArray = pose_est_service("Querying PoseEstimation service").poseArray
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
+
+        return poseArray
+
+    def _move_arms_to_start(self):
+        move_arm_service = rospy.ServiceProxy('/TiagoBears/go_to_start_left', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/go_to_start_left')
+                res = move_arm_service(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.2)
+
+        move_arm_service = rospy.ServiceProxy('/TiagoBears/go_to_start_right', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/go_to_start_right')
+                res = move_arm_service(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.2)
+
+    def _move_arms_to_watch(self):
+        move_arm_service = rospy.ServiceProxy('/TiagoBears/go_to_watch_left', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/go_to_watch_left')
+                res = move_arm_service(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.2)
+
+        move_arm_service = rospy.ServiceProxy('/TiagoBears/go_to_watch_right', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/go_to_watch_right')
+                res = move_arm_service(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.2)
