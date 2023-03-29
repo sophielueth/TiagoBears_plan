@@ -85,8 +85,8 @@ class GraspWrapper:
 				rospy.sleep(0.7)
 
 			elif state == GraspState.FREE: # can start new pick attempt
-				do_it = False
-				with self.lock:
+				do_it = False # only try picking if next_cube_pose is not None
+				with self.lock: # get cube pose, set state
 					if self.next_cube_pose is not None:
 						self.state = GraspState.IS_PICKING
 						cube_pose = self.next_cube_pose
@@ -96,20 +96,8 @@ class GraspWrapper:
 				if do_it:
 					print '=== Trying to pick cube at ({0}, {1}, {2}) with {3} hand ==='.format(cube_pose.position.x, cube_pose.position.y, cube_pose.position.z, 'left' if self.is_left else 'right')
 
-					# create pick request
-					pick_req = rospy.ServiceProxy('/TiagoBears/pick_left' if self.is_left else '/TiagoBears/pick_right', PickPlace)
-
 					# query pick service
-					success = None
-					while success is None:
-						try:
-							rospy.wait_for_service('/TiagoBears/pick_left' if self.is_left else '/TiagoBears/pick_right')
-							with GraspWrapper.move_group_execution_lock:
-								success = pick_req(cube_pose).success
-
-						except rospy.ServiceException as e: 
-							print('Service call failed: %s'%e)
-							rospy.sleep(1)
+					success = self.query_pick(cube_pose)
 
 					if success:
 						self.set_state(GraspState.HAS_PICKED)
@@ -121,18 +109,7 @@ class GraspWrapper:
 			elif state == GraspState.HAS_PICKED: # has executed a pick attempt that returned success
 				print '=== Checking whether recent pick with {0} hand has been successful and the cube is in the gripper ==='.format('left' if self.is_left else 'right')
 
-				# create request to check whether the gripper is empty
-				check_pick_req = rospy.ServiceProxy('/TiagoBears/is_empty_left' if self.is_left else '/TiagoBears/is_empty_right', InitEmpty)
-				
-				# query service
-				success = None
-				while success is None:
-					try:
-						rospy.wait_for_service('/TiagoBears/is_empty_left' if self.is_left else '/TiagoBears/is_empty_right')
-						success = not check_pick_req(False).res
-					except rospy.ServiceException as e: 
-						print('Service call failed: %s'%e)
-						rospy.sleep(1)
+				success = not self.query_gripper_empty_check()
 
 				if success:
 					self.set_state(GraspState.PICK_SUCCESSFUL)
@@ -143,24 +120,10 @@ class GraspWrapper:
 
 			elif state == GraspState.PICK_SUCCESSFUL: # check of successfule pick was successful
 				self.set_state(GraspState.IS_PLACING)
-				# create place request
-				place_req = rospy.ServiceProxy('/TiagoBears/place_left' if self.is_left else '/TiagoBears/place_right', PickPlace)
-				place_pose = self.get_next_place_pose()
-
 				print '=== Trying to place cube to ({0}, {1}, {2}) with {3} hand ==='.format(place_pose.position.x, place_pose.position.y, place_pose.position.z, 'left' if self.is_left else 'right')
 				
-
-				# query place service
-				success = None
-				while success is None:
-					try:
-						rospy.wait_for_service('/TiagoBears/place_left' if self.is_left else '/TiagoBears/place_right')
-						with GraspWrapper.move_group_execution_lock:
-							success = place_req(place_pose).success
-
-					except rospy.ServiceException as e: 
-						print('Service call failed: %s'%e)
-						rospy.sleep(1)
+				place_pose = self.get_next_place_pose()
+				success = self.query_place(place_pose)
 
 				# check for crash
 				# TODO
@@ -171,14 +134,68 @@ class GraspWrapper:
 				else:
 					print 'place with {0} hand failed at execution'.format('left' if self.is_left else 'right')
 
-
 				self.set_state(GraspState.FREE)
 
-			else:
-				# is supposed to never happen
+			else: # is supposed to never happen
 				print 'GraspWrapper: invalid state {0}'.format(state)
 			
 			rospy.sleep(1)
 
 			with self.lock:
 				terminate = self.terminate
+
+	def query_pick(self, cube_pose):
+		"""
+		tries to pick the cube at the given pose
+		"""
+		# create pick request
+		pick_req = rospy.ServiceProxy('/TiagoBears/pick_left' if self.is_left else '/TiagoBears/pick_right', PickPlace)
+		
+		success = None
+		while success is None:
+			try:
+				rospy.wait_for_service('/TiagoBears/pick_left' if self.is_left else '/TiagoBears/pick_right')
+				with GraspWrapper.move_group_execution_lock:
+					success = pick_req(cube_pose).success
+
+			except rospy.ServiceException as e: 
+				print('Service call failed: %s'%e)
+				rospy.sleep(1)
+
+		return success
+
+	def query_place(self, place_pose):
+		"""
+		tries to place the cube at the given pose
+		"""
+		# create place request
+		place_req = rospy.ServiceProxy('/TiagoBears/place_left' if self.is_left else '/TiagoBears/place_right', PickPlace)
+		
+		success = None
+		while success is None:
+			try:
+				rospy.wait_for_service('/TiagoBears/place_left' if self.is_left else '/TiagoBears/place_right')
+				with GraspWrapper.move_group_execution_lock:
+					success = place_req(place_pose).success
+
+			except rospy.ServiceException as e: 
+				print('Service call failed: %s'%e)
+				rospy.sleep(1)
+
+		return success
+
+	def query_gripper_empty_check(self):
+		# create request to check whether the gripper is empty
+		check_pick_req = rospy.ServiceProxy('/TiagoBears/is_empty_left' if self.is_left else '/TiagoBears/is_empty_right', InitEmpty)
+		
+		# query service
+		is_empty = None
+		while is_empty is None:
+			try:
+				rospy.wait_for_service('/TiagoBears/is_empty_left' if self.is_left else '/TiagoBears/is_empty_right')
+				is_empty = check_pick_req(False).res
+			except rospy.ServiceException as e: 
+				print('Service call failed: %s'%e)
+				rospy.sleep(1)
+
+		return is_empty
