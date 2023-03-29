@@ -4,7 +4,7 @@ from threading import Thread, Lock
 import rospy
 
 from TiagoBears_grasp.srv import PickPlace
-from TiagoBears_ColorDetection.srv import InitEmpty
+from TiagoBears_ColorDetection.srv import InitEmpty, Getcolor
 
 class GraspState(Enum):
 	# 0,     1,             2,      		3,   		4, 			5
@@ -112,8 +112,11 @@ class GraspWrapper:
 				success = not self.query_gripper_empty_check()
 
 				if success:
+					# query color detection service
+					color = self.query_color_detection()
+
 					self.set_state(GraspState.PICK_SUCCESSFUL)
-					print 'pick with {0} hand successfully acquired cube'.format('left' if self.is_left else 'right')
+					print 'pick with {0} hand successfully acquired {1} cube'.format('left' if self.is_left else 'right', color)
 				else:
 					self.set_state(GraspState.FREE)
 					print "pick with {0} hand didn't acquire cube".format('left' if self.is_left else 'right')
@@ -199,3 +202,17 @@ class GraspWrapper:
 				rospy.sleep(1)
 
 		return is_empty
+
+	def query_color_detection(self):
+		get_color_req = rospy.ServiceProxy('/TiagoBears/get_colors', Getcolor)
+
+		color = None
+		while color is None:
+			try:
+				rospy.wait_for_service('/TiagoBears/get_colors')
+				color = get_color_req('left' if self.is_left else 'right').colors.color
+
+			except rospy.ServiceException as e: 
+				print('Service call failed: %s'%e)
+				rospy.sleep(0.2)
+
