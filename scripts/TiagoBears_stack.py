@@ -25,12 +25,10 @@ if __name__ == '__main__':
         grasp_right = GraspWrapper('grasp_wrapper_right', is_left=False)
         grasp_left.start()
         grasp_right.start()
-
-        # get first cube pose estimation and take image to compare for later checks if cube is in gripper/picking has been successful
-        task.init_image_grippers()
         
         cube_poses = task.get_cube_poses()
         next_cubes = list(behavior.get_next_cube_poses(cube_poses)) # [next_cube_left, next_cube_right] as Poses of geometry_msgs
+        task.init_image_grippers() # get first cube pose estimation and take image to compare for later checks if cube is in gripper/picking has been successful
         
         last_place_pose_left = None
         last_place_pose_right = None
@@ -45,7 +43,6 @@ if __name__ == '__main__':
                 return cube_pose
 
         go_on = True
-        renew_pose_estimation = False
         task.add_table_collision()
         while go_on and not rospy.is_shutdown():            
             # TODO: add freeing space
@@ -67,27 +64,27 @@ if __name__ == '__main__':
                 last_place_pose_left = behavior.get_next_place_pose_left()
                 last_place_pose_left = correct_pose(last_place_pose_left)
                 grasp_left.set_next_place_pose(last_place_pose_left)
-                renew_pose_estimation = True # cube could have fallen down, renew pose estimation to cover this case
 
             if grasp_right.get_next_place_pose() is None:
                 task.add_cube_for_collision_at(last_place_pose_right)
                 last_place_pose_right = behavior.get_next_place_pose_right()
                 last_place_pose_right = correct_pose(last_place_pose_right)
                 grasp_right.set_next_place_pose(last_place_pose_right)
-                renew_pose_estimation = True # cube could have fallen down, renew pose estimation to cover this case
 
-            if renew_pose_estimation:
+            ## renew pose estimation: cube could have fallen down, renew pose estimation to cover this case
+            if grasp_left.get_state() in [GraspState.IS_PICKING, GraspState.IS_PLACING] or \
+               grasp_right.get_state() in [GraspState.IS_PICKING, GraspState.IS_PLACING]:
+                
                 grasp_left.join()
                 grasp_right.join()
 
                 cube_poses = task.get_cube_poses()
-                renew_pose_estimation = False
 
                 grasp_left.continue_()
                 grasp_right.continue_()
 
-            next_cube = behavior.get_next_cube_poses(cube_poses)
-            go_on = next_cube is not None or not (grasp_left.get_state() == GraspState.FREE and grasp_right.get_state() == GraspState.FREE)
+            next_cubes = list(behavior.get_next_cube_poses(cube_poses))
+            go_on = next_cubes is not (None, None) or not (grasp_left.get_state() == GraspState.FREE and grasp_right.get_state() == GraspState.FREE)
 
             rospy.sleep(0.2)
 
