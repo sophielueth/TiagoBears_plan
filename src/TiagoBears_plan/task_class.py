@@ -94,7 +94,7 @@ class Task:
         self.move_torso_to(0.06)
         rospy.sleep(0.5)
         cube_poses = []
-        pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
+        pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
 
         poseArray = None
         while poseArray is None:
