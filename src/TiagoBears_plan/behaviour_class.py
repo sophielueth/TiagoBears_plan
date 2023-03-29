@@ -34,8 +34,8 @@ class Behaviour(object):
                                                y=place_pos_right_start[1], 
                                                z=place_pos_right_start[2])
 
-        self.place_pose_left = Pose(position=self.place_pos_left_start, orientation=Quaternion(w=1.0))
-        self.place_pose_right = Pose(position=self.place_pos_right_start, orientation=Quaternion(w=1.0))
+        self.place_pose_left = Pose(position=copy.deepcopy(self.place_pos_left_start), orientation=Quaternion(w=1.0))
+        self.place_pose_right = Pose(position=copy.deepcopy(self.place_pos_right_start), orientation=Quaternion(w=1.0))
 
         # x values, so that x>threshold means the cube detected there is already placed (assumedly)
         self._place_threshold_left = self.place_pose_left.position.x - 0.05
