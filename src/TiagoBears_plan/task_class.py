@@ -99,7 +99,7 @@ class Task:
         poseArray = None
         while poseArray is None:
             try:
-                rospy.wait_for_service('PoseEstimation')
+                rospy.wait_for_service('/TiagoBears/PoseEstimation')
                 poseArray = pose_est_service("Querying PoseEstimation service").poseArray
 
             except rospy.ServiceException as e: 
