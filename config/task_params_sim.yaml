@@ -1,2 +1,2 @@
 min_diff_to_table: 0.02
-table_params: [0.62, 0.78, 0.50] # x-width, y-width, z-width
+table_params: [0.62, 0.78, 0.45] # x-width, y-width, z-width
