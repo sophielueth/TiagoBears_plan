@@ -9,7 +9,7 @@ import moveit_msgs.msg
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
 
-from TiagoBears_PoseEstimation.srv import PoseEstimation
+from TiagoBears_PoseEstimation.srv import PoseEstimation, TableCornerDetection
 from TiagoBears_ColorDetection.srv import InitEmpty
 from TiagoBears_grasp.srv import Trigger
 
@@ -128,6 +128,27 @@ class Task:
         return cube_poses
 
     ## Collision
+    def fetch_table_dims(self):
+        table_detect_service = rospy.ServiceProxy('/TiagoBears/TableCornerDetection', TableCornerDetection)
+
+        cornerPoints = None # will be a list of 4 points, [top_left, top_right, bot_left, bot_right]
+        while cornerPoints is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/TableCornerDetection')
+                cornerPoints = table_detect_service('').cornerPointArray
+
+            except rospy.ServiceException as e:
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
+
+        x, y, z = self.add_table_collision_at(cornerPoints)
+        self.set_table_dim([x, y, z])
+
+        return cornerPoints
+
+    def set_table_dim(self, table_dim):
+        self._table_dim = table_dim
+
     def add_cubes_for_collision_except(self, id_not_to_add, cubes):
         for cube in cubes:
             if cube.id is not id_not_to_add:
@@ -169,13 +190,28 @@ class Task:
         
         self._scene.add_box('table', ps, tuple(self._table_dim))
 
-    def add_table_collision_at(self, z_val):
+    def add_table_collision_at(self, top_corner_points): 
+        top_left, top_right, bot_left, bot_right = top_corner_points
+
+        x_min = min(bot_left.x, bot_right.x) - 0.05
+        x_max = max(bot_left.x, bot_right.x) + 0.05
+        x = x_max - x_min
+        
+        y_min = min(top_right.y, bot_right.y) - 0.05
+        y_max = max(top_left.y, bot_left.y) + 0.05
+        y = y_max - y_min
+
+        z = self._table_dim[2]
+        self._scene.remove_world_object('table')
+        
         # add table as collision object
-        p = Pose(Point(x=0.5, y=0, z=z_val), Quaternion())
+        p = Pose(Point(x=0.6, y=0, z=z/2), Quaternion())
         ps = PoseStamped()
         ps.header.frame_id = self.planning_frame
         ps.pose = p
-        self._scene.add_box('table', ps, (0.62, 0.78, 0.50))
+        self._scene.add_box('table', ps, (x, y, z))
+
+        return x, y, z
 
     def _call_pose_estimation(self):
         pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)

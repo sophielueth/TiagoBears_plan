@@ -19,7 +19,8 @@ if __name__ == '__main__':
         rospy.init_node('TiagoBears_stack')
 
         task = Task(ns) # already adds table as colllision object
-        behavior = Behaviour_stack(ns)
+        table_dims = task.fetch_table_dims() # from pose_estimation, also updates table collision object
+        behavior = Behaviour_stack(ns, table_dims=table_dims)
 
         grasp_left = GraspWrapper('grasp_wrapper_left', is_left=True)
         grasp_right = GraspWrapper('grasp_wrapper_right', is_left=False)

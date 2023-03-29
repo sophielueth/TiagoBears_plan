@@ -11,7 +11,7 @@ class Behaviour(object):
     """
     handles which of the detected cubes to pick next and where to place them
     """
-    def __init__(self, ns):
+    def __init__(self, ns, table_corners=None):
         self.ns = ns
         self._cube_length = rospy.get_param(ns + '/cube_length')
         self._stack_height_max = rospy.get_param(ns + '/stack_height')
@@ -22,11 +22,23 @@ class Behaviour(object):
         place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
         place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
 
+        if table_corners is not None: # calculate start positions from detected table corners
+            top_left, top_right, bot_left, bot_right = table_corners
+            x_min = min(top_left.x, top_right.x) - 0.02 # safety margin
+            y_left = min(top_left.y, bot_left.y) - 0.02 # safety margin
+            y_right = max(top_right.y, bot_right.y) + 0.02 # safety margin
+
+            x_start = x_min - 0.04
+            place_pos_left_start[0] = x_start
+            place_pos_right_start[0] = x_start
+
+            place_pos_left_start[1] = y_left - 0.04 # y_left_start
+            place_pos_right_start[1] = y_right + 0.04 # y_right_start
+
         # the maximum x value (front direction), that Tiago can reach on the table height is roughly 0.72
         if place_pos_left_start[0]> 0.72: place_pos_left_start[0] = 0.72
         if place_pos_right_start[0] > 0.72: place_pos_right_start[0] = 0.72
 
-        # TODO: change to be able to get this from pose estimation also
         self.place_pos_left_start = Point(x=place_pos_left_start[0], 
                                               y=place_pos_left_start[1], 
                                               z=place_pos_left_start[2])
