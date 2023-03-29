@@ -100,7 +100,7 @@ class GraspWrapper:
 					while success is None:
 						try:
 							rospy.wait_for_service('/TiagoBears/pick_left' if self.is_left else '/TiagoBears/pick_right')
-							success = pick_req(cube_pose).success.data
+							success = pick_req(cube_pose).success
 
 						except rospy.ServiceException as e: 
 							print('Service call failed: %s'%e)

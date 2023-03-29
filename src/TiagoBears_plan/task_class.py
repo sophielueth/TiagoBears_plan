@@ -34,9 +34,6 @@ class Task:
         self._table_dim = rospy.get_param(self.ns + '/table_params')
         self._table_diff = rospy.get_param(self.ns + '/min_diff_to_table') # min dist to table for all grasps
 
-        # add table as collision object
-        self.add_table_collision()
-
         # Create a `DisplayTrajectory`_ ROS publisher which is used to display trajectories in Rviz:
         self.disp_traj_pub = rospy.Publisher('/move_group/display_planned_path', moveit_msgs.msg.DisplayTrajectory, queue_size=20)
 
@@ -50,6 +47,9 @@ class Task:
         self._pub_thread = Thread(name='task_publisher', target=self._update_torso)
         self._pub_thread.start()
         self.move_torso_up()    
+
+        # add table as collision object
+        self.remove_cube_collisions()
 
         self._cube_counter = 0  
 
@@ -116,10 +116,17 @@ class Task:
             # check validity of pose
             if pose is not None and not pose_in_origin(pose): 
                 # sort cube_poses in increasing order of x coordinate of pos
-                for index, cube_pose in enumerate(cube_poses):
-                    if cube_pose.position.x > pose.pose.pose.position.x:
-                        cube_poses.insert(index, pose.pose.pose)
-                        break
+                pose = pose.pose.pose
+                if len(cube_poses) == 0:
+                    cube_poses.append(pose)
+                else:
+                    for index, cube_pose in enumerate(cube_poses):
+                        if cube_pose is not None and cube_pose.position.x > pose.position.x:
+                            cube_poses.insert(index, pose)
+                            pose = None
+                            break
+                    if pose is not None: # has not yet been inserted
+                        cube_poses.append(pose)
 
         return cube_poses
 
@@ -163,7 +170,7 @@ class Task:
         ps.header.frame_id = self.planning_frame
         ps.pose = p
         
-        self._scene.add_box('table', ps, self._table_dim)
+        self._scene.add_box('table', ps, tuple(self._table_dim))
 
     def add_table_collision_at(self, z_val):
         # add table as collision object

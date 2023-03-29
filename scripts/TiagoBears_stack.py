@@ -30,21 +30,33 @@ if __name__ == '__main__':
         task.init_image_grippers()
         
         cube_poses = task.get_cube_poses()
-        next_cubes = behavior.get_next_cube_poses(cube_poses)
+        next_cubes = list(behavior.get_next_cube_poses(cube_poses)) # [next_cube_left, next_cube_right] as Poses of geometry_msgs
         
         last_place_pose_left = None
         last_place_pose_right = None
 
+        def correct_pose(cube_pose):
+                """moving the cube_pose in y direction due to point cloud distortion that tilts table (see rviz)"""
+                y = cube_pose.position.y
+                # cube_pose.position.y += np.sign(y)*(0.045 * np.abs(y - (-0.15)) / 0.16)
+                cube_pose.position.y += 0.04
+                cube_pose.position.x += 0.01
+
+                return cube_pose
+
         go_on = True
         renew_pose_estimation = False
+        task.add_table_collision()
         while go_on and not rospy.is_shutdown():            
             # TODO: add freeing space
 
             ## Handling pick poses: filling in the next element, after the last one has been tried
             # the grasp_wrapper's pick pose is set to None the moment it will be tried
             if grasp_left.get_next_cube_pose() is None:
+                next_cubes[0] = correct_pose(next_cubes[0])
                 grasp_left.set_next_cube_pose(next_cubes[0])
             if grasp_right.get_next_cube_pose() is None:
+                next_cubes[1] = correct_pose(next_cubes[1])
                 grasp_right.set_next_cube_pose(next_cubes[1])
 
             ## Handling place poses: filling in the next element if needed
@@ -53,12 +65,14 @@ if __name__ == '__main__':
             if grasp_left.get_next_place_pose() is None:
                 task.add_cube_for_collision_at(last_place_pose_left)
                 last_place_pose_left = behavior.get_next_place_pose_left()
+                last_place_pose_left = correct_pose(last_place_pose_left)
                 grasp_left.set_next_place_pose(last_place_pose_left)
                 renew_pose_estimation = True # cube could have fallen down, renew pose estimation to cover this case
 
             if grasp_right.get_next_place_pose() is None:
                 task.add_cube_for_collision_at(last_place_pose_right)
                 last_place_pose_right = behavior.get_next_place_pose_right()
+                last_place_pose_right = correct_pose(last_place_pose_right)
                 grasp_right.set_next_place_pose(last_place_pose_right)
                 renew_pose_estimation = True # cube could have fallen down, renew pose estimation to cover this case
 
@@ -72,7 +86,7 @@ if __name__ == '__main__':
                 grasp_left.continue_()
                 grasp_right.continue_()
 
-            next_cube = behavior.get_next_cube_pose(cube_poses)
+            next_cube = behavior.get_next_cube_poses(cube_poses)
             go_on = next_cube is not None or not (grasp_left.get_state() == GraspState.FREE and grasp_right.get_state() == GraspState.FREE)
 
             rospy.sleep(0.2)

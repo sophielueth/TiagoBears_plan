@@ -22,6 +22,10 @@ class Behaviour(object):
         place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
         place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
 
+        # the maximum x value (front direction), that Tiago can reach on the table height is roughly 0.72
+        if place_pos_left_start[0]> 0.72: place_pos_left_start[0] = 0.72
+        if place_pos_right_start[0] > 0.72: place_pos_right_start[0] = 0.72
+
         # TODO: change to be able to get this from pose estimation also
         self.place_pos_left_start = Point(x=place_pos_left_start[0], 
                                               y=place_pos_left_start[1], 
@@ -29,6 +33,7 @@ class Behaviour(object):
         self.place_pos_right_start = Point(x=place_pos_right_start[0], 
                                                y=place_pos_right_start[1], 
                                                z=place_pos_right_start[2])
+
         self.place_pose_left = Pose(position=self.place_pos_left_start, orientation=Quaternion(w=1.0))
         self.place_pose_right = Pose(position=self.place_pos_right_start, orientation=Quaternion(w=1.0))
 

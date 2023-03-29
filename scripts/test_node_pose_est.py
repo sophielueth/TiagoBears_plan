@@ -2,6 +2,7 @@
 
 import sys
 import rospy
+import numpy as np
 import subprocess
 
 from TiagoBears_grasp.grasp_class import Grasp
@@ -26,10 +27,16 @@ if __name__ == '__main__':
 
         place_pos_left_start = rospy.get_param(ns + '/place_pos_left_start')
         place_pos_right_start = rospy.get_param(ns + '/place_pos_right_start')
+
+        # the maximum x value (front direction), that Tiago can reach on the table height is roughly 0.72
+        if place_pos_left_start[0]> 0.72: place_pos_left_start[0] = 0.72
+        if place_pos_right_start[0] > 0.72: place_pos_right_start[0] = 0.72
+
         place_pose_left = Pose(position=Point(x=place_pos_left_start[0], 
                                               y=place_pos_left_start[1], 
                                               z=place_pos_left_start[2]), 
                                               orientation=Quaternion(w=1.0))
+
         place_pose_right = Pose(position=Point(x=place_pos_right_start[0], 
                                                y=place_pos_right_start[1], 
                                                z=place_pos_right_start[2]), 
@@ -38,8 +45,8 @@ if __name__ == '__main__':
         task.move_torso_to(0.06)
         rospy.sleep(0.5)
         cube_poses = []
-        rospy.wait_for_service('PoseEstimation')
-        pose_est_service = rospy.ServiceProxy('PoseEstimation', PoseEstimation)
+        rospy.wait_for_service('/TiagoBears/PoseEstimation')
+        pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
 
         try:
             poseArray = pose_est_service("Hi :) This is a test...").poseArray
@@ -72,12 +79,23 @@ if __name__ == '__main__':
                     min_dist_sq = dist_sq
                     min_ind = index
             
-            print '=== Trying to pick cube {0} ==='.format(min_ind)
+            def correct_pose(cube_pose):
+                """moving the cube_pose in y direction due to point cloud distortion that tilts table (see rviz)"""
+                y = cube_pose.position.y
+                # cube_pose.position.y += np.sign(y)*(0.045 * np.abs(y - (-0.15)) / 0.16)
+                cube_pose.position.y += 0.04
+                cube_pose.position.x += 0.01
+
+                return cube_pose
+
             cube_pose = cube_poses.pop(min_ind)
+            cube_pose = correct_pose(cube_pose)
             try:
                 task.remove_cube_collisions()
                 # add_cubes_for_collision_but_not(cube.id, cubes, scene, robot.get_planning_frame())
                 use_left = True if cube_pose.position.y > 0 else False
+
+                print '=== Trying to pick cube {0} at ({1}, {2}, {3}) with {4} hand ==='.format(min_ind, cube_pose.position.x, cube_pose.position.y, cube_pose.position.z, 'left' if use_left else 'right')
 
                 pick_success = grasp_left.pick(cube_pose) if use_left else grasp_right.pick(cube_pose)
                 
