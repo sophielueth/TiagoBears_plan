@@ -69,8 +69,8 @@ class Behaviour(object):
         raise NotImplementedError
 
 class Behaviour_stack(Behaviour):
-    def __init__(self, ns):
-        super(Behaviour_stack, self).__init__(ns)
+    def __init__(self, ns, table_corners=None):
+        super(Behaviour_stack, self).__init__(ns, table_corners)
 
     def get_next_cube_poses(self, cube_poses):
         # return pose with the smallest x value that is not already placed, if none is found return None

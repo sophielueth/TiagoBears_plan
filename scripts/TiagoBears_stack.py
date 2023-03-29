@@ -19,8 +19,8 @@ if __name__ == '__main__':
         rospy.init_node('TiagoBears_stack')
 
         task = Task(ns) # already adds table as colllision object
-        table_dims = task.fetch_table_dims() # from pose_estimation, also updates table collision object
-        behavior = Behaviour_stack(ns, table_dims=table_dims)
+        table_corners = task.fetch_table_dims() # from pose_estimation, also updates table collision object
+        behavior = Behaviour_stack(ns, table_corners=table_corners)
 
         grasp_left = GraspWrapper('grasp_wrapper_left', is_left=True)
         grasp_right = GraspWrapper('grasp_wrapper_right', is_left=False)
@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
         def correct_pose(cube_pose):
                 """moving the cube_pose in y direction due to point cloud distortion that tilts table (see rviz)"""
+                if cube_pose is None: return
                 y = cube_pose.position.y
                 # cube_pose.position.y += np.sign(y)*(0.045 * np.abs(y - (-0.15)) / 0.16)
                 cube_pose.position.y += 0.04
@@ -85,9 +86,10 @@ if __name__ == '__main__':
                 grasp_right.continue_()
 
             next_cubes = list(behavior.get_next_cube_poses(cube_poses))
+            rospy.sleep(0.2)
+
             go_on = next_cubes is not (None, None) or not (grasp_left.get_state() == GraspState.FREE and grasp_right.get_state() == GraspState.FREE)
 
-            rospy.sleep(0.2)
 
         print('All detected cubes have been stacked, exiting...')
         grasp_left.stop()

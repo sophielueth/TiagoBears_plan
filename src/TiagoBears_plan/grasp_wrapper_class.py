@@ -50,7 +50,7 @@ class GraspWrapper:
 		with self.lock:
 			self.state = state
 
-		print '{0} grasp_wrapper now in state {1}'.format('left' if self.is_left else 'right', state.name)
+		# print '{0} grasp_wrapper now in state {1}'.format('left' if self.is_left else 'right', state.name)
 
 	def start(self):
 		self.thread.start()
@@ -123,9 +123,9 @@ class GraspWrapper:
 
 			elif state == GraspState.PICK_SUCCESSFUL: # check of successfule pick was successful
 				self.set_state(GraspState.IS_PLACING)
+				place_pose = self.get_next_place_pose()
 				print '=== Trying to place cube to ({0}, {1}, {2}) with {3} hand ==='.format(place_pose.position.x, place_pose.position.y, place_pose.position.z, 'left' if self.is_left else 'right')
 				
-				place_pose = self.get_next_place_pose()
 				success = self.query_place(place_pose)
 
 				# check for crash
@@ -210,9 +210,11 @@ class GraspWrapper:
 		while color is None:
 			try:
 				rospy.wait_for_service('/TiagoBears/get_colors')
-				color = get_color_req('left' if self.is_left else 'right').colors.color
+				color = get_color_req('left' if self.is_left else 'right').colors[0].color
 
 			except rospy.ServiceException as e: 
 				print('Service call failed: %s'%e)
 				rospy.sleep(0.2)
 
+		if color == 'no color info': color = ''
+		return color

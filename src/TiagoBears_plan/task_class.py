@@ -127,8 +127,24 @@ class Task:
 
         return cube_poses
 
+    def _call_pose_estimation(self):
+        pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
+        poseArray = None
+        while poseArray is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/PoseEstimation')
+                poseArray = pose_est_service("Querying PoseEstimation service").poseArray
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
+
+        return poseArray
+
     ## Collision
     def fetch_table_dims(self):
+        self._move_arms_to_start()
+
         table_detect_service = rospy.ServiceProxy('/TiagoBears/TableCornerDetection', TableCornerDetection)
 
         cornerPoints = None # will be a list of 4 points, [top_left, top_right, bot_left, bot_right]
@@ -140,6 +156,11 @@ class Task:
             except rospy.ServiceException as e:
                 print('Service call failed: %s'%e)
                 rospy.sleep(0.5)
+
+        # debug:
+        print 'TableDetection returned:'
+        for point in cornerPoints:
+            print 'x: {0}, y: {1}, z: {2}'.format(point.x, point.y, point.z)
 
         x, y, z = self.add_table_collision_at(cornerPoints)
         self.set_table_dim([x, y, z])
@@ -194,7 +215,7 @@ class Task:
         top_left, top_right, bot_left, bot_right = top_corner_points
 
         x_min = min(bot_left.x, bot_right.x) - 0.05
-        x_max = max(bot_left.x, bot_right.x) + 0.05
+        x_max = max(top_left.x, top_right.x) + 0.05
         x = x_max - x_min
         
         y_min = min(top_right.y, bot_right.y) - 0.05
@@ -213,20 +234,7 @@ class Task:
 
         return x, y, z
 
-    def _call_pose_estimation(self):
-        pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
-        poseArray = None
-        while poseArray is None:
-            try:
-                rospy.wait_for_service('/TiagoBears/PoseEstimation')
-                poseArray = pose_est_service("Querying PoseEstimation service").poseArray
-
-            except rospy.ServiceException as e: 
-                print('Service call failed: %s'%e)
-                rospy.sleep(0.5)
-
-        return poseArray
-
+    ## Arm movement
     def _move_arms_to_start(self):
         move_arm_service = rospy.ServiceProxy('/TiagoBears/go_to_start_left', Trigger)
         res = None
