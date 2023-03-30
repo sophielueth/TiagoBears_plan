@@ -1,17 +1,11 @@
 #!/usr/bin/env python
 
-#!/usr/bin/env python
-
 import sys
 import rospy
-import copy
 
-from TiagoBears_grasp.grasp_class import Grasp
 from TiagoBears_plan.task_class import Task
 from TiagoBears_plan.behaviour_class import Behaviour_stack
 from TiagoBears_plan.grasp_wrapper_class import GraspState, GraspWrapper
-
-from geometry_msgs.msg import Pose, Point, Quaternion
 
 if __name__ == '__main__':
     try:
@@ -35,12 +29,12 @@ if __name__ == '__main__':
         last_place_pose_right = None
 
         def correct_pose(cube_pose):
-                """moving the cube_pose in y direction due to point cloud distortion that tilts table (see rviz)"""
-                if cube_pose is None: return
-                y = cube_pose.position.y
-                # cube_pose.position.y += np.sign(y)*(0.045 * np.abs(y - (-0.15)) / 0.16)
-                cube_pose.position.y += 0.04
-                cube_pose.position.x += 0.01
+                # """moving the cube_pose in y direction due to point cloud distortion that tilts table (see rviz)"""
+                # if cube_pose is None: return
+                # y = cube_pose.position.y
+                # # cube_pose.position.y += np.sign(y)*(0.045 * np.abs(y - (-0.15)) / 0.16)
+                # cube_pose.position.y += 0.04
+                # cube_pose.position.x += 0.01
 
                 return cube_pose
 
