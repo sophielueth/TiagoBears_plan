@@ -76,7 +76,14 @@ class Task:
 
         sys.exit() 
 
+    ## Gripper checking and movement
     def init_image_grippers(self):
+        self._move_arms_to_watch()
+        self._close_grippers()
+        self._query_init_image()
+        self._open_grippers()
+
+    def _query_init_image(self):
         init_img_req = rospy.ServiceProxy('/TiagoBears/init_empty_check', InitEmpty)
         
         success = None
@@ -88,6 +95,52 @@ class Task:
             except rospy.ServiceException as e: 
                 print('Service call failed: %s'%e)
                 rospy.sleep(1)
+
+    def _open_grippers(self):
+        open_req = rospy.ServiceProxy('/TiagoBears/open_left_gripper', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/open_left_gripper')
+                res = open_req(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
+
+        open_req = rospy.ServiceProxy('/TiagoBears/open_right_gripper', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/open_right_gripper')
+                res = open_req(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
+
+    def _close_grippers(self):
+        open_req = rospy.ServiceProxy('/TiagoBears/close_left_gripper', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/close_left_gripper')
+                res = open_req(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
+
+        open_req = rospy.ServiceProxy('/TiagoBears/close_right_gripper', Trigger)
+        res = None
+        while res is None:
+            try:
+                rospy.wait_for_service('/TiagoBears/close_right_gripper')
+                res = open_req(True).res
+
+            except rospy.ServiceException as e: 
+                print('Service call failed: %s'%e)
+                rospy.sleep(0.5)
 
     ## Cube estimation
     def get_cube_poses(self):
