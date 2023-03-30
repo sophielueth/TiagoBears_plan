@@ -97,7 +97,7 @@ class Task:
 
         self._move_arms_to_start() # move arms out of field of view, avoid collision with table
         self.move_torso_to(0.06)
-        rospy.sleep(0.5) # wait for torso to arrive
+        rospy.sleep(2) # wait for torso to arrive
 
         poseArray = self._call_pose_estimation()
 
