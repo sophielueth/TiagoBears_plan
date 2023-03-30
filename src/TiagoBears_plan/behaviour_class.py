@@ -92,7 +92,7 @@ class Behaviour_stack(Behaviour):
             index += 1
         
         if next_cube_left is None and next_cube_right is None:
-            return None
+            return None, None
         
         return next_cube_left, next_cube_right
 
