@@ -61,7 +61,7 @@ class GraspWrapper:
 		"""
 		state = self.get_state()
 		while state in [GraspState.IS_PICKING, GraspState.IS_PLACING]:
-			rospy.sleep(0.8)
+			rospy.sleep(0.5)
 			state = self.get_state()
 		self.save_state = state
 		self.set_state(GraspState.PAUSED)
