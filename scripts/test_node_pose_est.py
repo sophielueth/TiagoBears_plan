@@ -43,7 +43,7 @@ if __name__ == '__main__':
                                                orientation=Quaternion(w=1.0))
 
         task.move_torso_to(0.06)
-        rospy.sleep(0.5)
+        rospy.sleep(2)
         cube_poses = []
         rospy.wait_for_service('/TiagoBears/PoseEstimation')
         pose_est_service = rospy.ServiceProxy('/TiagoBears/PoseEstimation', PoseEstimation)
